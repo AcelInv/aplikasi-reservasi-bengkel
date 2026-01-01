@@ -3,14 +3,15 @@ package com.my.projekakhir.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.my.projekakhir.R
 import com.my.projekakhir.databinding.ItemCarCardBinding
 import com.my.projekakhir.models.Car
+import com.my.projekakhir.R
 
 class CarAdapter(
     private val cars: List<Car>,
     private val onHistoryClick: (Car) -> Unit,
-    private val onDetailClick: (Car) -> Unit
+    private val onDetailClick: (Car) -> Unit,
+    private val onDeleteClick: (Car) -> Unit
 ) : RecyclerView.Adapter<CarAdapter.CarViewHolder>() {
 
     inner class CarViewHolder(private val binding: ItemCarCardBinding) :
@@ -27,15 +28,13 @@ class CarAdapter(
                 "drawable",
                 context.packageName
             )
-
-            if (imageResId != 0) {
-                binding.ivCarImage.setImageResource(imageResId)
-            } else {
-                binding.ivCarImage.setImageResource(R.drawable.placeholder_car)
-            }
+            binding.ivCarImage.setImageResource(
+                if (imageResId != 0) imageResId else R.drawable.placeholder_car
+            )
 
             binding.btnHistory.setOnClickListener { onHistoryClick(car) }
             binding.btnDetail.setOnClickListener { onDetailClick(car) }
+            binding.btnDelete.setOnClickListener { onDeleteClick(car) }
         }
     }
 

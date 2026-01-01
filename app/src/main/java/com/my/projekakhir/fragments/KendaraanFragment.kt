@@ -35,8 +35,7 @@ class KendaraanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        dbRef = FirebaseDatabase.getInstance()
-            .getReference("cars")
+        dbRef = FirebaseDatabase.getInstance().getReference("cars")
 
         setupRecyclerView()
         loadCarsFromFirebase()
@@ -51,31 +50,34 @@ class KendaraanFragment : Fragment() {
 
     private fun setupRecyclerView() {
         carAdapter = CarAdapter(
-            carList,
-            onHistoryClick = {
-                Toast.makeText(requireContext(), "Riwayat ${it.model}", Toast.LENGTH_SHORT).show()
+            cars = carList,
+            onHistoryClick = { car ->
+                Toast.makeText(requireContext(), "Riwayat ${car.model}", Toast.LENGTH_SHORT).show()
             },
-
             onDetailClick = { car ->
                 val bundle = Bundle().apply {
-                    putString("brand", car.brand)
-                    putString("model", car.model)
-                    putString("year", car.year)
-                    putString("plate", car.plateNumber)
-                    putString("image", car.imageName)
+                    putString("brand", car.brand ?: "")
+                    putString("model", car.model ?: "")
+                    putString("year", car.year ?: "")
+                    putString("plate", car.plateNumber ?: "")
+                    putString("image", car.imageName ?: "")
                 }
-
                 val detailFragment = DetailKendaraanFragment()
                 detailFragment.arguments = bundle
-
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, detailFragment)
                     .addToBackStack(null)
                     .commit()
+            },
+            onDeleteClick = { car ->
+                dbRef.child(car.key ?: return@CarAdapter).removeValue()
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Mobil dihapus", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), "Gagal menghapus mobil", Toast.LENGTH_SHORT).show()
+                    }
             }
-
-
-
         )
 
         binding.carsRecycler.apply {
@@ -88,14 +90,11 @@ class KendaraanFragment : Fragment() {
         dbRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 carList.clear()
-
                 for (child in snapshot.children) {
                     val car = child.getValue(Car::class.java)
-                    if (car != null) {
-                        carList.add(car)
-                    }
+                    car?.key = child.key // simpan key untuk hapus
+                    if (car != null) carList.add(car)
                 }
-
                 carAdapter.notifyDataSetChanged()
             }
 

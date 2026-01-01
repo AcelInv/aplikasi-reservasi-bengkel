@@ -38,10 +38,6 @@ class BookingHistoryDetailFragment : Fragment() {
         binding.tvJam.text = args?.getString("jam") ?: "-"
         binding.tvTotal.text = args?.getString("total") ?: "-"
 
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, detailFragment)
-            .addToBackStack(null)
-            .commit()
     }
 
     override fun onDestroyView() {

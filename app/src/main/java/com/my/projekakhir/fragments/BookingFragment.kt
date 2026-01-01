@@ -16,18 +16,17 @@ import com.my.projekakhir.viewModel.UserViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
-private val HARGA_SERVIS_RINGAN = 150_000
-private val HARGA_GANTI_OLI = 200_000
-private val HARGA_SERVIS_BERKALA = 100_000
-private val HARGA_SERVIS_REM = 80_000
-private val HARGA_TUNE_UP = 120_000
-private val HARGA_TAMBAL_BAN = 50_000
-
 class BookingFragment : Fragment() {
-
     private val userViewModel: UserViewModel by activityViewModels()
     private var _binding: FragmentBookingBinding? = null
     private val binding get() = _binding!!
+
+    private val HARGA_SERVIS_RINGAN = 150_000
+    private val HARGA_GANTI_OLI = 200_000
+    private val HARGA_SERVIS_BERKALA = 100_000
+    private val HARGA_SERVIS_REM = 80_000
+    private val HARGA_TUNE_UP = 120_000
+    private val HARGA_TAMBAL_BAN = 50_000
 
     private var selectedTime: String = ""
     private val calendar = Calendar.getInstance()
@@ -45,36 +44,6 @@ class BookingFragment : Fragment() {
         return binding.root
     }
 
-    private fun updateTotalPrice() {
-        var total = 0
-
-        if (binding.cbServiceRingan.isChecked) {
-            total += HARGA_SERVIS_RINGAN
-        }
-
-        if (binding.cbGantiOli.isChecked) {
-            total += HARGA_GANTI_OLI
-        }
-
-        if (binding.cbServiceBerkala.isChecked) {
-            total += HARGA_SERVIS_BERKALA
-        }
-
-        if (binding.cbServiceRem.isChecked) {
-            total += HARGA_SERVIS_REM
-        }
-
-        if (binding.cbTuneUp.isChecked) {
-            total += HARGA_TUNE_UP
-        }
-
-        if (binding.cbTambalBan.isChecked) {
-            total += HARGA_TAMBAL_BAN
-        }
-
-        binding.tvTotalPrice.text = "Rp ${"%,d".format(total)}"
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -88,29 +57,9 @@ class BookingFragment : Fragment() {
         }
 
         // Setup checkbox listeners
-        binding.cbServiceRingan.setOnCheckedChangeListener { _, _ ->
-            updateTotalPrice()
-        }
-
-        binding.cbGantiOli.setOnCheckedChangeListener { _, _ ->
-            updateTotalPrice()
-        }
-
-        binding.cbServiceBerkala.setOnCheckedChangeListener { _, _ ->
-            updateTotalPrice()
-        }
-
-        binding.cbServiceRem.setOnCheckedChangeListener { _, _ ->
-            updateTotalPrice()
-        }
-
-        binding.cbTuneUp.setOnCheckedChangeListener { _, _ ->
-            updateTotalPrice()
-        }
-
-        binding.cbTambalBan.setOnCheckedChangeListener { _, _ ->
-            updateTotalPrice()
-        }
+        setupCheckboxListener()
+        autoCheckServiceFromHome()
+        updateTotalPrice()
 
         // Setup date picker
         binding.tvTanggal.setOnClickListener {
@@ -131,6 +80,61 @@ class BookingFragment : Fragment() {
             parentFragmentManager.popBackStack()
             (activity as? MainActivity)?.showBottomNav()
         }
+    }
+
+    private fun setupCheckboxListener() {
+        binding.cbServiceRingan.setOnCheckedChangeListener { _, _ -> updateTotalPrice() }
+        binding.cbGantiOli.setOnCheckedChangeListener { _, _ -> updateTotalPrice() }
+        binding.cbServiceBerkala.setOnCheckedChangeListener { _, _ -> updateTotalPrice() }
+        binding.cbServiceRem.setOnCheckedChangeListener { _, _ -> updateTotalPrice() }
+        binding.cbTuneUp.setOnCheckedChangeListener { _, _ -> updateTotalPrice() }
+        binding.cbTambalBan.setOnCheckedChangeListener { _, _ -> updateTotalPrice() }
+    }
+
+    private fun autoCheckServiceFromHome() {
+        val serviceName = arguments?.getString("SERVICE_NAME") ?: return
+
+        when (serviceName) {
+            "Ganti Oli" -> binding.cbGantiOli.isChecked = true
+            "Servis Ringan" -> binding.cbServiceRingan.isChecked = true
+            "Servis Berkala" -> binding.cbServiceBerkala.isChecked = true
+            "Servis Rem" -> binding.cbServiceRem.isChecked = true
+            "Tune Up" -> binding.cbTuneUp.isChecked = true
+            "Tambal Ban" -> binding.cbTambalBan.isChecked = true
+        }
+    }
+
+    private fun updateTotalPrice(): Pair<ArrayList<String>, Int> {
+        val services = arrayListOf<String>()
+        var total = 0
+
+        if (binding.cbServiceRingan.isChecked) {
+            total += HARGA_SERVIS_RINGAN
+            services.add("Servis Ringan")
+        }
+        if (binding.cbGantiOli.isChecked) {
+            total += HARGA_GANTI_OLI
+            services.add("Ganti Oli")
+        }
+        if (binding.cbServiceBerkala.isChecked) {
+            total += HARGA_SERVIS_BERKALA
+            services.add("Servis Berkala")
+        }
+        if (binding.cbServiceRem.isChecked) {
+            total += HARGA_SERVIS_REM
+            services.add("Servis Rem")
+        }
+        if (binding.cbTuneUp.isChecked) {
+            total += HARGA_TUNE_UP
+            services.add("Tune Up")
+        }
+        if (binding.cbTambalBan.isChecked) {
+            total += HARGA_TAMBAL_BAN
+            services.add("Tambal Ban")
+        }
+
+        binding.tvTotalPrice.text = "Rp ${"%,d".format(total)}"
+        return Pair(services, total)
     }
 
     private fun showDatePicker() {
@@ -203,46 +207,8 @@ class BookingFragment : Fragment() {
         timePickerDialog.show()
     }
 
-
-    private fun getSelectedServices(): Pair<ArrayList<String>, Int> {
-        val services = arrayListOf<String>()
-        var total = 0
-
-        if (binding.cbServiceRingan.isChecked) {
-            services.add("Servis Ringan")
-            total += HARGA_SERVIS_RINGAN
-        }
-
-        if (binding.cbGantiOli.isChecked) {
-            services.add("Ganti Oli")
-            total += HARGA_GANTI_OLI
-        }
-
-        if (binding.cbServiceBerkala.isChecked) {
-            services.add("Servis Berkala")
-            total += HARGA_SERVIS_BERKALA
-        }
-
-        if (binding.cbServiceRem.isChecked) {
-            services.add("Servis Rem")
-            total += HARGA_SERVIS_REM
-        }
-
-        if (binding.cbTuneUp.isChecked) {
-            services.add("Tune Up")
-            total += HARGA_TUNE_UP
-        }
-
-        if (binding.cbTambalBan.isChecked) {
-            services.add("Tambal Ban")
-            total += HARGA_TAMBAL_BAN
-        }
-
-        return Pair(services, total)
-    }
-
     private fun openDetailBooking() {
-        val (selectedServices, totalPrice) = getSelectedServices()
+        val (selectedServices, totalPrice) = updateTotalPrice()
 
         // Validasi layanan
         if (selectedServices.isEmpty()) {

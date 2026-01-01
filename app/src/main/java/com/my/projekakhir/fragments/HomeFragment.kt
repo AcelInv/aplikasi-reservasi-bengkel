@@ -6,16 +6,22 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.my.projekakhir.MainActivity
 import com.my.projekakhir.R
 import com.my.projekakhir.adapters.ServiceAdapter
+import com.my.projekakhir.adapters.ServiceCategoryAdapter
 import com.my.projekakhir.databinding.FragmentHomeBinding
 import com.my.projekakhir.models.Service
+import com.my.projekakhir.models.ServiceCategory
 
 class HomeFragment : Fragment() {
 
+    private lateinit var categoryAdapter: ServiceCategoryAdapter
+    private lateinit var categoryList: List<ServiceCategory>
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
@@ -35,7 +41,7 @@ class HomeFragment : Fragment() {
 
         setupRecyclerView()
         setupMainButtons()
-        setupServiceCategoryClicks()
+        setupCategory()
         setupSearch()
     }
 
@@ -70,8 +76,14 @@ class HomeFragment : Fragment() {
             )
         )
 
-        serviceAdapter = ServiceAdapter(services) {
-            navigateToBooking(null)
+        serviceAdapter = ServiceAdapter(services) { service ->
+            val serviceName = when (service.name) {
+                "Ganti Oli Mesin" -> "Ganti Oli"
+                "Cek Rem" -> "Servis Rem"
+                "Tune Up" -> "Tune Up"
+                else -> null
+            }
+            navigateToBooking(serviceName)
         }
 
         binding.recommendedServicesRecycler.apply {
@@ -86,70 +98,37 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun setupServiceCategoryClicks() {
-        binding.cardGantiOli.setOnClickListener {
-            navigateToBooking("Ganti Oli")
+    private fun setupCategory() {
+        categoryList = listOf(
+            ServiceCategory("Ganti Oli", R.drawable.ic_wrench),
+            ServiceCategory("Servis Ringan", R.drawable.ic_car),
+            ServiceCategory("Servis Berkala", R.drawable.ic_calendar),
+            ServiceCategory("Servis Rem", R.drawable.ic_calendar),
+            ServiceCategory("Tune Up", R.drawable.ic_wrench),
+            ServiceCategory("Tambal Ban", R.drawable.ic_car)
+        )
+
+        categoryAdapter = ServiceCategoryAdapter(categoryList) { category ->
+            navigateToBooking(category.name)
         }
 
-        binding.cardServisRingan.setOnClickListener {
-            navigateToBooking("Servis Ringan")
-        }
-
-        binding.cardServisBerkala.setOnClickListener {
-            navigateToBooking("Servis Berkala")
-        }
-
-        binding.cardServisRem.setOnClickListener {
-            navigateToBooking("Servis Rem")
-        }
-
-        binding.cardTuneUp.setOnClickListener {
-            navigateToBooking("Tune Up")
-        }
-
-        binding.cardTambalBan.setOnClickListener {
-            navigateToBooking("Tambal Ban")
+        binding.rvServiceCategory.apply {
+            layoutManager = GridLayoutManager(requireContext(), 3)
+            adapter = categoryAdapter
         }
     }
 
     private fun setupSearch() {
+        binding.searchService.addTextChangedListener {
+            val keyword = it.toString().lowercase()
 
-        binding.searchService.addTextChangedListener(object : TextWatcher {
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-                val keyword = s.toString().lowercase().trim()
-
-                binding.cardGantiOli.visibility =
-                    if (keyword.isEmpty() || keyword.contains("oli") || keyword.contains("ganti"))
-                        View.VISIBLE else View.GONE
-
-                binding.cardServisRingan.visibility =
-                    if (keyword.isEmpty() || keyword.contains("ringan") || keyword.contains("servis"))
-                        View.VISIBLE else View.GONE
-
-                binding.cardServisBerkala.visibility =
-                    if (keyword.isEmpty() || keyword.contains("berkala") || keyword.contains("servis"))
-                        View.VISIBLE else View.GONE
-
-                binding.cardServisRem.visibility =
-                    if (keyword.isEmpty() || keyword.contains("servis") || keyword.contains("rem"))
-                        View.VISIBLE else View.GONE
-
-                binding.cardTuneUp.visibility =
-                    if (keyword.isEmpty() || keyword.contains("tune") || keyword.contains("tune") || keyword.contains("up"))
-                        View.VISIBLE else View.GONE
-
-                binding.cardTambalBan.visibility =
-                    if (keyword.isEmpty() || keyword.contains("tambal") || keyword.contains("ban"))
-                        View.VISIBLE else View.GONE
+            val filtered = categoryList.filter { item ->
+                item.name.lowercase().contains(keyword)
             }
 
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun afterTextChanged(s: Editable?) {}
-        })
+            categoryAdapter.updateData(filtered)
+        }
     }
-
 
     private fun navigateToBooking(serviceName: String?) {
         val fragment = BookingFragment().apply {

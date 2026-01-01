@@ -22,8 +22,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-
-
 class DetailBookingFragment : Fragment() {
     private val userViewModel: UserViewModel by activityViewModels()
     private var _binding: FragmentDetailBookingBinding? = null

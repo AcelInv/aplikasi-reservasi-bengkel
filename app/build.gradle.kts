@@ -68,11 +68,13 @@ dependencies {
 
     // Glide
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.androidx.activity)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     // FIREBASE
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation("com.google.firebase:firebase-database-ktx")
+    implementation("com.google.firebase:firebase-auth-ktx")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

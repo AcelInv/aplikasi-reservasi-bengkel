@@ -15,6 +15,8 @@ import com.my.projekakhir.databinding.FragmentAddCarBinding
 import com.my.projekakhir.models.Car
 import java.util.*
 
+
+
 class AddCarFragment : Fragment() {
 
     private var _binding: FragmentAddCarBinding? = null
@@ -71,9 +73,10 @@ class AddCarFragment : Fragment() {
         val storageRef = FirebaseStorage.getInstance().reference.child("car_images/${UUID.randomUUID()}")
         val uploadTask = storageRef.putFile(uri)
         uploadTask.addOnSuccessListener {
-            storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+            val addOnSuccessListener = storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
                 saveCarToDatabase(downloadUri.toString())
             }
+            addOnSuccessListener
         }.addOnFailureListener {
             Toast.makeText(requireContext(), "Gagal upload gambar", Toast.LENGTH_SHORT).show()
         }
